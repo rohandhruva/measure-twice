@@ -34,8 +34,6 @@ public final class Benchy {
             System.out.println("Took: " + duration / 1_000_000.0 + " millis");
             System.out.println("RPS: " + requests * 1_000_000_000.0 / duration);
             System.out.println("------------------");
-
-            Thread.sleep(1000);
         }
     }
 }

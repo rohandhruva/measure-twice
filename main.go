@@ -5,11 +5,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	echo "github.com/alimate/measurement/g/grpc"
-	"google.golang.org/grpc"
 	"log"
 	"sync"
 	"time"
+
+	echo "github.com/alimate/measurement/g/grpc"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -22,26 +23,29 @@ func main() {
 		log.Fatal("Failed to connect to the server", err)
 	}
 
-	wg := &sync.WaitGroup{}
-	wg.Add(requests)
 	msg := &echo.Message{
 		Content: "Hello",
 	}
 
-	startedAt := time.Now()
-	for i := 0; i < requests; i++ {
-		go func() {
-			_, err := echo.NewEchoServiceClient(conn).Echo(context.Background(), msg)
-			if err != nil {
-				fmt.Println("Failed to handle a request", err)
-			}
+	for j := 0; j < 10; j++ {
+		wg := &sync.WaitGroup{}
+		wg.Add(requests)
+		startedAt := time.Now()
+		for i := 0; i < requests; i++ {
+			go func() {
+				_, err := echo.NewEchoServiceClient(conn).Echo(context.Background(), msg)
+				if err != nil {
+					fmt.Println("Failed to handle a request", err)
+				}
 
-			wg.Done()
-		}()
+				wg.Done()
+			}()
+		}
+
+		wg.Wait()
+		duration := time.Since(startedAt).Milliseconds()
+		fmt.Println("Took: ", duration)
+		fmt.Println("RPS: ", float64(requests)*1000.0/float64(duration))
+		fmt.Println("------------------")
 	}
-
-	wg.Wait()
-	duration := time.Since(startedAt).Milliseconds()
-	fmt.Println("Took: ", duration)
-	fmt.Println("RPS: ", float64(requests)*1000.0/float64(duration))
 }
